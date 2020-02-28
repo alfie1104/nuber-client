@@ -53,23 +53,46 @@ const Button = styled.button`
   cursor: pointer;
 `;
 
-const PhoneLoginPresenter = () => (
+interface IProps {
+  countryCode: string;
+  phoneNumber: string;
+  onInputChange: (
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+}
+
+const PhoneLoginPresenter: React.FC<IProps> = ({
+  countryCode,
+  phoneNumber,
+  onInputChange,
+  onSubmit
+}) => (
   <Container>
     <Helmet>
       <title>Phone Login | Nuber</title>
     </Helmet>
     <BackArrowExtended backTo={"/"} />
     <Title>Enter your mobile number</Title>
-    <CountrySelect>
+    <CountrySelect
+      value={countryCode}
+      name="countryCode"
+      onChange={onInputChange}
+    >
       {countries.map((country, index) => (
         <CountryOption key={index} value={country.dial_code}>
           {country.flag} {country.name} ({country.dial_code})
         </CountryOption>
       ))}
     </CountrySelect>
-    <Form>
-      <Input placeholder={"053 690 2129"} />
-      <Button>
+    <Form onSubmit={onSubmit}>
+      <Input
+        placeholder={"053 690 2129"}
+        value={phoneNumber}
+        name="phoneNumber"
+        onChange={onInputChange}
+      />
+      <Button onClick={onSubmit}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
