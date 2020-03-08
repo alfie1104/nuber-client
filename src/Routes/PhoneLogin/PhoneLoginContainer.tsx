@@ -7,7 +7,7 @@ import {
   startPhoneVerificationVariables
 } from "../../types/api";
 import { Mutation } from "react-apollo";
-import { PHONE_SIGN_IN } from "./PhoneQueries.queries";
+import { PHONE_SIGN_IN } from "./PhoneQueries";
 
 interface IState {
   countryCode: string;
