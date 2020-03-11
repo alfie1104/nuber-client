@@ -5,7 +5,7 @@ import { facebookConnect, facebookConnectVariables } from "src/types/api";
 import { FACEBOOK_CONNECT } from "./SocialLoginQueries";
 import { RouteComponentProps } from "react-router-dom";
 import { toast } from "react-toastify";
-import { LOG_USER_IN } from "src/sharedQueries";
+import { LOG_USER_IN } from "src/sharedQueries.local";
 
 class LoginMutation extends Mutation<
   facebookConnect,
