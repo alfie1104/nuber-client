@@ -6,6 +6,7 @@ import { MutationFn } from "react-apollo";
 import Helmet from "react-helmet";
 import Header from "src/Components/Header";
 import Button from "src/Components/Button";
+import { updateProfile, updateProfileVariables } from "../../types/api";
 
 const Container = styled.div``;
 
@@ -22,8 +23,8 @@ interface IProps {
   lastName: string;
   email: string;
   profilePhoto: string;
-  onSubmit: MutationFn;
   onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onSubmit: MutationFn<updateProfile, updateProfileVariables>;
   loading: boolean;
 }
 
@@ -32,8 +33,8 @@ const EditAccountPresenter: React.FC<IProps> = ({
   lastName,
   email,
   profilePhoto,
-  onSubmit,
   onInputChange,
+  onSubmit,
   loading
 }) => {
   return (
