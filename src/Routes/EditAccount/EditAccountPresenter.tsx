@@ -27,7 +27,6 @@ interface IProps {
   onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: MutationFn<updateProfile, updateProfileVariables>;
   loading: boolean;
-  uploaded: boolean;
   uploading: boolean;
 }
 
@@ -39,7 +38,6 @@ const EditAccountPresenter: React.FC<IProps> = ({
   onInputChange,
   onSubmit,
   loading,
-  uploaded,
   uploading
 }) => {
   return (
@@ -50,8 +48,7 @@ const EditAccountPresenter: React.FC<IProps> = ({
       <Header title={"Edit Account"} backTo={"/"} />
       <ExtendedForm submitFn={onSubmit}>
         <PhotoInput
-          uploaded={uploaded}
-          uploading={false}
+          uploading={uploading}
           fileUrl={profilePhoto}
           onChange={onInputChange}
         />
