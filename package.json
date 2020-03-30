@@ -55,6 +55,7 @@
     ]
   },
   "devDependencies": {
+    "@types/googlemaps": "^3.39.3",
     "tslint": "^6.0.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-react": "^4.2.0"
