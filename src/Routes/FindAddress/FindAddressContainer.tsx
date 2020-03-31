@@ -2,9 +2,20 @@ import React from "react";
 import ReactDOM from "react-dom";
 import FindAddressPresenter from "./FindAddressPresenter";
 
-class FindAddressContainer extends React.Component<any> {
+interface IState {
+  lat: number;
+  lng: number;
+  address: string;
+}
+
+class FindAddressContainer extends React.Component<any, IState> {
   public mapRef: any;
   public map: google.maps.Map | any;
+  public state = {
+    address: "",
+    lat: 0,
+    lng: 0
+  };
 
   constructor(props) {
     super(props);
@@ -12,16 +23,77 @@ class FindAddressContainer extends React.Component<any> {
   }
 
   public componentDidMount() {
+    navigator.geolocation.getCurrentPosition(
+      this.handleGeoSuccess,
+      this.handleGeoError
+    );
+  }
+
+  public handleGeoSuccess = (position: Position) => {
+    const {
+      coords: { latitude: lat, longitude: lng }
+    } = position;
+
+    this.setState({
+      lat,
+      lng
+    });
+    this.loadMap(lat, lng);
+  };
+
+  public handleGeoError = () => {
+    console.log("No location");
+  };
+
+  public loadMap = (lat, lng) => {
     const { google } = this.props;
     const maps = google.maps;
     const mapNode = ReactDOM.findDOMNode(this.mapRef.current);
-    this.map = new maps.Map(mapNode);
-  }
+    const mapConfig: google.maps.MapOptions = {
+      zoom: 11,
+      center: {
+        lat,
+        lng
+      },
+      disableDefaultUI: true
+    };
+    this.map = new maps.Map(mapNode, mapConfig);
+    this.map.addListener("dragend", this.handleDragEnd);
+  };
+
+  public handleDragEnd = () => {
+    const newCenter = this.map.getCenter();
+    const lat = newCenter.lat();
+    const lng = newCenter.lng();
+
+    this.setState({ lat, lng });
+  };
+
+  public onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const {
+      target: { name, value }
+    } = event;
+
+    this.setState({
+      [name]: value
+    } as any);
+  };
+
+  public onInputBlur = () => {
+    console.log("Address updated");
+  };
 
   public render() {
-    console.log(this.props);
+    const { address } = this.state;
 
-    return <FindAddressPresenter mapRef={this.mapRef} />;
+    return (
+      <FindAddressPresenter
+        mapRef={this.mapRef}
+        onInputBlur={this.onInputBlur}
+        onInputChange={this.onInputChange}
+        address={address}
+      />
+    );
   }
 }
 
