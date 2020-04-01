@@ -25,13 +25,20 @@ interface IProps {
   value: string;
   onClick: any;
   disabled?: boolean;
+  className?: string;
 }
 
-const Button: React.FC<IProps> = ({ value, onClick, disabled = false }) => (
+const Button: React.FC<IProps> = ({
+  value,
+  onClick,
+  disabled = false,
+  className
+}) => (
   <Container
     value={value}
     disabled={disabled}
     onClick={onClick}
+    className={className}
     type={"submit"}
   />
 );
