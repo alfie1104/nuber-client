@@ -6,6 +6,7 @@ import { addPlace, addPlaceVariables } from "../../types/api";
 import { ADD_PLACE } from "./AddPlaceQuery";
 import { GET_PLACES } from "src/sharedQueries";
 import { toast } from "react-toastify";
+import { Location } from "history";
 
 interface IState {
   address: string;
@@ -14,25 +15,33 @@ interface IState {
   lng: number;
 }
 
-interface IProps extends RouteComponentProps<any> {}
+interface MyState {
+  lat?: number;
+  lng?: number;
+  address?: string;
+}
+
+interface LProps extends Location<MyState> {
+  state: MyState;
+}
+
+interface IProps extends RouteComponentProps<any> {
+  location: LProps;
+}
 
 class AddPlaceMutation extends Mutation<addPlace, addPlaceVariables> {}
 
 class AddPlaceContainer extends React.Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
-    // const { location: { state = {} } = {} } = props;
+    const {
+      location: { state: { address = "", lat = 0, lng = 0 } = {} } = {}
+    } = props;
 
     this.state = {
-      /*
-      address: state?.address || "",
-      lat: state?.lat || 0,
-      lng: state?.lng || 0,
-      name: ""
-      */
-      address: "",
-      lat: 0,
-      lng: 0,
+      address: address || "",
+      lat: lat || 0,
+      lng: lng || 0,
       name: ""
     };
   }
