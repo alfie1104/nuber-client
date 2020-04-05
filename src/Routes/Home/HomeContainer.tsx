@@ -2,11 +2,13 @@ import React from "react";
 import ReactDOM from "react-dom";
 import HomePresenter from "./HomePresenter";
 import { RouteComponentProps } from "react-router-dom";
-import { Query } from "react-apollo";
+import { Query, graphql, MutationFn } from "react-apollo";
 import { userProfile } from "src/types/api";
 import { USER_PROFILE } from "src/sharedQueries";
 import { geoCode } from "src/mapHelpers";
 import { toast } from "react-toastify";
+import { REPORT_LOCATION } from "./HomeQueries";
+import { reportMovement, reportMovementVariables } from "../../types/api";
 
 interface IState {
   isMenuOpen: boolean;
@@ -15,13 +17,14 @@ interface IState {
   toAddress: string;
   toLat: number;
   toLng: number;
-  distance?: string;
+  distance: string;
   duration?: string;
-  price?: number;
+  price?: string;
 }
 
 interface IProps extends RouteComponentProps<any> {
   google: any;
+  reportLocation: MutationFn;
 }
 
 class ProfileQuery extends Query<userProfile> {}
@@ -37,9 +40,13 @@ class HomeContainer extends React.Component<IProps, IState> {
     isMenuOpen: false,
     lat: 0,
     lng: 0,
-    toAddress: "",
+    toAddress:
+      "Athens International Airport (ATH), Attiki Odos, Spata Artemida 190 04, Greece",
     toLat: 0,
-    toLng: 0
+    toLng: 0,
+    distance: "",
+    duration: undefined,
+    price: undefined
   };
 
   constructor(props) {
@@ -183,32 +190,45 @@ class HomeContainer extends React.Component<IProps, IState> {
       travelMode: google.maps.TravelMode.DRIVING
     };
 
-    directionsService.route(directionsOptions, (result, status) => {
-      if (status === google.maps.DirectionsStatus.OK) {
-        const { routes } = result;
-        const {
-          distance: { text: distance },
-          duration: { text: duration }
-        } = routes[0].legs[0];
+    directionsService.route(directionsOptions, this.handleRouteRequest);
+  };
 
-        this.setState({
+  public handleRouteRequest = (
+    result: google.maps.DirectionsResult,
+    status: google.maps.DirectionsStatus
+  ) => {
+    if (status === google.maps.DirectionsStatus.OK) {
+      const { routes } = result;
+      const {
+        distance: { text: distance },
+        duration: { text: duration }
+      } = routes[0].legs[0];
+
+      this.directions.setDirections(result);
+      this.directions.setMap(this.map);
+      this.setState(
+        {
           distance,
           duration
-        });
+        },
+        this.setPrice
+      );
+    } else {
+      toast.error("There is no route there, you have to swim");
+    }
+  };
 
-        this.directions.setDirections(result);
-        this.directions.setMap(this.map);
-      } else {
-        toast.error("There is no route there, you have to swim");
-      }
-    });
-
-    // const { google } = this.props;
-    // const maps = google.maps;
+  public setPrice = () => {
+    const { distance } = this.state;
+    if (distance) {
+      this.setState({
+        price: Number(parseFloat(distance.replace(",", "")) * 3).toFixed(2)
+      });
+    }
   };
 
   render() {
-    const { isMenuOpen, toAddress } = this.state;
+    const { isMenuOpen, toAddress, price } = this.state;
 
     return (
       <ProfileQuery query={USER_PROFILE}>
@@ -220,6 +240,7 @@ class HomeContainer extends React.Component<IProps, IState> {
             mapRef={this.mapRef}
             toAddress={toAddress}
             onInputChange={this.onInputChange}
+            price={price}
             onAddressSubmit={this.onAddressSubmit}
           />
         )}
@@ -236,4 +257,7 @@ class HomeContainer extends React.Component<IProps, IState> {
   };
 }
 
-export default HomeContainer;
+export default graphql<any, reportMovement, reportMovementVariables>(
+  REPORT_LOCATION,
+  { name: "reportLocation" }
+)(HomeContainer);
