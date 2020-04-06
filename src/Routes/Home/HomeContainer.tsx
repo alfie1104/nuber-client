@@ -46,7 +46,7 @@ class HomeContainer extends React.Component<IProps, IState> {
     toLng: 0,
     distance: "",
     duration: undefined,
-    price: undefined
+    price: undefined,
   };
 
   constructor(props) {
@@ -63,12 +63,12 @@ class HomeContainer extends React.Component<IProps, IState> {
 
   public handleGeoSuccess: PositionCallback = (position: Position) => {
     const {
-      coords: { latitude: lat, longitude: lng }
+      coords: { latitude: lat, longitude: lng },
     } = position;
 
     this.setState({
       lat,
-      lng
+      lng,
     });
     this.loadMap(lat, lng);
   };
@@ -85,25 +85,25 @@ class HomeContainer extends React.Component<IProps, IState> {
       zoom: 13,
       center: {
         lat,
-        lng
+        lng,
       },
-      disableDefaultUI: true
+      disableDefaultUI: true,
     };
     this.map = new maps.Map(mapNode, mapConfig);
     const userMarkerOptions: google.maps.MarkerOptions = {
       position: {
         lat,
-        lng
+        lng,
       },
       icon: {
         path: maps.SymbolPath.CIRCLE,
-        scale: 7
-      }
+        scale: 7,
+      },
     };
     this.userMarker = new maps.Marker(userMarkerOptions);
     this.userMarker.setMap(this.map);
     const watchOptions: PositionOptions = {
-      enableHighAccuracy: true
+      enableHighAccuracy: true,
     };
     navigator.geolocation.watchPosition(
       this.handleGeoWatchSuccess,
@@ -113,22 +113,30 @@ class HomeContainer extends React.Component<IProps, IState> {
   };
 
   public handleGeoWatchSuccess = (position: Position) => {
+    const { reportLocation } = this.props;
     const {
-      coords: { latitude: lat, longitude: lng }
+      coords: { latitude: lat, longitude: lng },
     } = position;
     this.userMarker.setPosition({ lat, lng });
     this.map.panTo({ lat, lng });
+    reportLocation({
+      variables: {
+        lat,
+        lng,
+      },
+    });
   };
+
   public handleGeoWatchError = () => {
     console.log("Error watching you");
   };
 
   public onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const {
-      target: { name, value }
+      target: { name, value },
     } = event;
     this.setState({
-      [name]: value
+      [name]: value,
     } as any);
   };
 
@@ -147,8 +155,8 @@ class HomeContainer extends React.Component<IProps, IState> {
       const toMarkerOptions: google.maps.MarkerOptions = {
         position: {
           lat,
-          lng
-        }
+          lng,
+        },
       };
       this.toMarker = new maps.Marker(toMarkerOptions);
       this.toMarker.setMap(this.map);
@@ -161,7 +169,7 @@ class HomeContainer extends React.Component<IProps, IState> {
         {
           toLat: lat,
           toLng: lng,
-          toAddress: formatted_address
+          toAddress: formatted_address,
         },
         this.createPath
       );
@@ -176,8 +184,8 @@ class HomeContainer extends React.Component<IProps, IState> {
     const renderOptions: google.maps.DirectionsRendererOptions = {
       suppressMarkers: true,
       polylineOptions: {
-        strokeColor: "#000"
-      }
+        strokeColor: "#000",
+      },
     };
 
     this.directions = new google.maps.DirectionsRenderer(renderOptions);
@@ -187,7 +195,7 @@ class HomeContainer extends React.Component<IProps, IState> {
     const directionsOptions: google.maps.DirectionsRequest = {
       destination: to,
       origin: from,
-      travelMode: google.maps.TravelMode.DRIVING
+      travelMode: google.maps.TravelMode.DRIVING,
     };
 
     directionsService.route(directionsOptions, this.handleRouteRequest);
@@ -201,7 +209,7 @@ class HomeContainer extends React.Component<IProps, IState> {
       const { routes } = result;
       const {
         distance: { text: distance },
-        duration: { text: duration }
+        duration: { text: duration },
       } = routes[0].legs[0];
 
       this.directions.setDirections(result);
@@ -209,7 +217,7 @@ class HomeContainer extends React.Component<IProps, IState> {
       this.setState(
         {
           distance,
-          duration
+          duration,
         },
         this.setPrice
       );
@@ -222,7 +230,7 @@ class HomeContainer extends React.Component<IProps, IState> {
     const { distance } = this.state;
     if (distance) {
       this.setState({
-        price: Number(parseFloat(distance.replace(",", "")) * 3).toFixed(2)
+        price: Number(parseFloat(distance.replace(",", "")) * 3).toFixed(2),
       });
     }
   };
@@ -249,9 +257,9 @@ class HomeContainer extends React.Component<IProps, IState> {
   }
 
   public toggleMenu = () => {
-    this.setState(state => {
+    this.setState((state) => {
       return {
-        isMenuOpen: !state.isMenuOpen
+        isMenuOpen: !state.isMenuOpen,
       };
     });
   };
