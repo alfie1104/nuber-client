@@ -248,24 +248,41 @@ class HomeContainer extends React.Component<IProps, IState> {
       } = data;
       if (ok && drivers) {
         for (const driver of drivers) {
-          console.log(driver);
           if (driver && driver.lastLat && driver.lastLng) {
-            const markerOptions: google.maps.MarkerOptions = {
-              position: {
+            const existingDriver:
+              | google.maps.Marker
+              | undefined = this.drivers.find(
+              (driverMarker: google.maps.Marker) => {
+                const markerID = driverMarker.get("ID");
+                return markerID === driver.id;
+              }
+            );
+
+            if (existingDriver) {
+              existingDriver.setPosition({
                 lat: driver.lastLat,
                 lng: driver.lastLng,
-              },
-              icon: {
-                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                scale: 5,
-              },
-            };
+              });
+              existingDriver.setMap(this.map);
+            } else {
+              const markerOptions: google.maps.MarkerOptions = {
+                position: {
+                  lat: driver.lastLat,
+                  lng: driver.lastLng,
+                },
+                icon: {
+                  path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                  scale: 5,
+                },
+              };
 
-            const newMarker: google.maps.Marker = new google.maps.Marker(
-              markerOptions
-            );
-            newMarker.set("ID", driver.id);
-            newMarker.setMap(this.map);
+              const newMarker: google.maps.Marker = new google.maps.Marker(
+                markerOptions
+              );
+              newMarker.set("ID", driver.id);
+              newMarker.setMap(this.map);
+              this.drivers.push(newMarker);
+            }
           }
         }
       }
@@ -281,6 +298,7 @@ class HomeContainer extends React.Component<IProps, IState> {
         {({ data, loading }) => (
           <NearbyQueries
             query={GET_NEARBY_DRIVERS}
+            pollInterval={1000}
             skip={
               (data &&
                 data.GetMyProfile &&
