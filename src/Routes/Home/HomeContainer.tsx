@@ -36,13 +36,13 @@ class HomeContainer extends React.Component<IProps, IState> {
   public userMarker: google.maps.Marker | any;
   public toMarker: google.maps.Marker | any;
   public directions: google.maps.DirectionsRenderer | any;
+  public drivers: google.maps.Marker[];
 
   public state = {
     isMenuOpen: false,
     lat: 0,
     lng: 0,
-    toAddress:
-      "Athens International Airport (ATH), Attiki Odos, Spata Artemida 190 04, Greece",
+    toAddress: "한국타이어 테크노돔",
     toLat: 0,
     toLng: 0,
     distance: "",
@@ -53,6 +53,7 @@ class HomeContainer extends React.Component<IProps, IState> {
   constructor(props) {
     super(props);
     this.mapRef = React.createRef();
+    this.drivers = [];
   }
 
   public componentDidMount() {
@@ -82,6 +83,10 @@ class HomeContainer extends React.Component<IProps, IState> {
     const { google } = this.props;
     const maps = google.maps;
     const mapNode = ReactDOM.findDOMNode(this.mapRef.current);
+    if (!mapNode) {
+      this.loadMap(lat, lng);
+      return;
+    }
     const mapConfig: google.maps.MapOptions = {
       zoom: 13,
       center: {
@@ -236,13 +241,55 @@ class HomeContainer extends React.Component<IProps, IState> {
     }
   };
 
+  public handleNearbyDrivers = (data: {} | getDrivers) => {
+    if ("GetNearbyDrivers" in data) {
+      const {
+        GetNearbyDrivers: { drivers, ok },
+      } = data;
+      if (ok && drivers) {
+        for (const driver of drivers) {
+          console.log(driver);
+          if (driver && driver.lastLat && driver.lastLng) {
+            const markerOptions: google.maps.MarkerOptions = {
+              position: {
+                lat: driver.lastLat,
+                lng: driver.lastLng,
+              },
+              icon: {
+                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                scale: 5,
+              },
+            };
+
+            const newMarker: google.maps.Marker = new google.maps.Marker(
+              markerOptions
+            );
+            newMarker.set("ID", driver.id);
+            newMarker.setMap(this.map);
+          }
+        }
+      }
+    }
+
+    return null;
+  };
   render() {
     const { isMenuOpen, toAddress, price } = this.state;
 
     return (
       <ProfileQuery query={USER_PROFILE}>
         {({ data, loading }) => (
-          <NearbyQueries query={GET_NEARBY_DRIVERS}>
+          <NearbyQueries
+            query={GET_NEARBY_DRIVERS}
+            skip={
+              (data &&
+                data.GetMyProfile &&
+                data.GetMyProfile.user &&
+                data.GetMyProfile.user.isDriving) ||
+              false
+            }
+            onCompleted={this.handleNearbyDrivers}
+          >
             {() => (
               <HomePresenter
                 loading={loading}
