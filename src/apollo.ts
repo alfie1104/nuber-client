@@ -42,7 +42,7 @@ const wsLink = new WebSocketLink({
     },
     reconnect: true,
   },
-  uri: "ws://localhost:4000/subscriptions",
+  uri: "ws://localhost:4000/subscription",
 });
 
 // apollo가 스스로 subscription인지 아니면 그냥 http요청인지 판단할 수 없기때문에 다음 함수를 통해 알려줌

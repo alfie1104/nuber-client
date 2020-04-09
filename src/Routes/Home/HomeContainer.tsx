@@ -2,18 +2,28 @@ import React from "react";
 import ReactDOM from "react-dom";
 import HomePresenter from "./HomePresenter";
 import { RouteComponentProps } from "react-router-dom";
-import { Query, graphql, MutationFn } from "react-apollo";
+import { Query, graphql, MutationFn, Mutation } from "react-apollo";
 import { userProfile, getDrivers } from "src/types/api";
 import { USER_PROFILE } from "src/sharedQueries";
-import { geoCode } from "src/mapHelpers";
+import { geoCode, reverseGeoCode } from "src/mapHelpers";
 import { toast } from "react-toastify";
-import { REPORT_LOCATION, GET_NEARBY_DRIVERS } from "./HomeQueries";
-import { reportMovement, reportMovementVariables } from "../../types/api";
+import {
+  REPORT_LOCATION,
+  GET_NEARBY_DRIVERS,
+  REQUEST_RIDE,
+} from "./HomeQueries";
+import {
+  reportMovement,
+  reportMovementVariables,
+  requestRide,
+  requestRideVariables,
+} from "../../types/api";
 
 interface IState {
   isMenuOpen: boolean;
   lat: number;
   lng: number;
+  fromAddress: string;
   toAddress: string;
   toLat: number;
   toLng: number;
@@ -29,6 +39,7 @@ interface IProps extends RouteComponentProps<any> {
 
 class ProfileQuery extends Query<userProfile> {}
 class NearbyQueries extends Query<getDrivers> {}
+class RequestRideMutation extends Mutation<requestRide, requestRideVariables> {}
 
 class HomeContainer extends React.Component<IProps, IState> {
   public mapRef: any;
@@ -42,6 +53,7 @@ class HomeContainer extends React.Component<IProps, IState> {
     isMenuOpen: false,
     lat: 0,
     lng: 0,
+    fromAddress: "",
     toAddress: "한국타이어 테크노돔",
     toLat: 0,
     toLng: 0,
@@ -72,7 +84,18 @@ class HomeContainer extends React.Component<IProps, IState> {
       lat,
       lng,
     });
+    this.getFromAddress(lat, lng);
     this.loadMap(lat, lng);
+  };
+
+  public getFromAddress = async (lat: number, lng: number) => {
+    const address = await reverseGeoCode(lat, lng);
+
+    if (address) {
+      this.setState({
+        fromAddress: address,
+      });
+    }
   };
 
   public handleGeoError: PositionErrorCallback = () => {
@@ -290,8 +313,29 @@ class HomeContainer extends React.Component<IProps, IState> {
 
     return null;
   };
+
+  public handleRideRequest = (data: requestRide) => {
+    const { RequestRide } = data;
+    if (RequestRide.ok) {
+      toast.success("Drive requested, finding a driver");
+    } else {
+      toast.error(RequestRide.error);
+    }
+  };
+
   render() {
-    const { isMenuOpen, toAddress, price } = this.state;
+    const {
+      isMenuOpen,
+      price,
+      distance,
+      fromAddress,
+      toAddress,
+      lat,
+      lng,
+      toLat,
+      toLng,
+      duration,
+    } = this.state;
 
     return (
       <ProfileQuery query={USER_PROFILE}>
@@ -309,17 +353,36 @@ class HomeContainer extends React.Component<IProps, IState> {
             onCompleted={this.handleNearbyDrivers}
           >
             {() => (
-              <HomePresenter
-                loading={loading}
-                isMenuOpen={isMenuOpen}
-                toggleMenu={this.toggleMenu}
-                mapRef={this.mapRef}
-                toAddress={toAddress}
-                onInputChange={this.onInputChange}
-                price={price}
-                onAddressSubmit={this.onAddressSubmit}
-                data={data}
-              />
+              <RequestRideMutation
+                mutation={REQUEST_RIDE}
+                onCompleted={this.handleRideRequest}
+                variables={{
+                  pickUpAddress: fromAddress,
+                  pickUpLat: lat,
+                  pickUpLng: lng,
+                  dropOffAddress: toAddress,
+                  dropOffLat: toLat,
+                  dropOffLng: toLng,
+                  price: price || 0,
+                  distance,
+                  duration: duration || "",
+                }}
+              >
+                {(requestRideFn) => (
+                  <HomePresenter
+                    loading={loading}
+                    isMenuOpen={isMenuOpen}
+                    toggleMenu={this.toggleMenu}
+                    mapRef={this.mapRef}
+                    toAddress={toAddress}
+                    onInputChange={this.onInputChange}
+                    price={price}
+                    data={data}
+                    onAddressSubmit={this.onAddressSubmit}
+                    requestRideFn={requestRideFn}
+                  />
+                )}
+              </RequestRideMutation>
             )}
           </NearbyQueries>
         )}

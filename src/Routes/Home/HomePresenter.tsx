@@ -6,6 +6,8 @@ import Menu from "../../Components/Menu";
 import AddressBar from "src/Components/AddressBar";
 import Button from "src/Components/Button";
 import { userProfile } from "src/types/api";
+import { MutationFn } from "react-apollo";
+import { requestRide, requestRideVariables } from "../../types/api";
 
 const Container = styled.div``;
 
@@ -56,6 +58,7 @@ interface IProps {
   onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   price?: string;
   data?: userProfile;
+  requestRideFn?: MutationFn<requestRide, requestRideVariables>;
 }
 const HomePresenter: React.FC<IProps> = ({
   isMenuOpen,
@@ -67,6 +70,7 @@ const HomePresenter: React.FC<IProps> = ({
   onInputChange,
   price,
   data: { GetMyProfile: { user = null } = {} } = {},
+  requestRideFn,
 }) => (
   <Container>
     <Helmet>
@@ -98,7 +102,7 @@ const HomePresenter: React.FC<IProps> = ({
       )}
       {price && (
         <RequestButton
-          onClick={onAddressSubmit}
+          onClick={requestRideFn}
           disabled={toAddress === ""}
           value={`Request Ride ($${price})`}
         />
