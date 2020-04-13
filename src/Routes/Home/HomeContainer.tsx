@@ -3,7 +3,13 @@ import ReactDOM from "react-dom";
 import HomePresenter from "./HomePresenter";
 import { RouteComponentProps } from "react-router-dom";
 import { Query, graphql, MutationFn, Mutation } from "react-apollo";
-import { userProfile, getDrivers } from "src/types/api";
+import {
+  userProfile,
+  getDrivers,
+  getRides,
+  acceptRide,
+  acceptRideVariables,
+} from "src/types/api";
 import { USER_PROFILE } from "src/sharedQueries";
 import { geoCode, reverseGeoCode } from "src/mapHelpers";
 import { toast } from "react-toastify";
@@ -11,6 +17,8 @@ import {
   REPORT_LOCATION,
   GET_NEARBY_DRIVERS,
   REQUEST_RIDE,
+  GET_NEARBY_RIDE,
+  ACCEPT_RIDE,
 } from "./HomeQueries";
 import {
   reportMovement,
@@ -30,6 +38,7 @@ interface IState {
   distance: string;
   duration?: string;
   price?: string;
+  isDriving: boolean;
 }
 
 interface IProps extends RouteComponentProps<any> {
@@ -40,6 +49,8 @@ interface IProps extends RouteComponentProps<any> {
 class ProfileQuery extends Query<userProfile> {}
 class NearbyQueries extends Query<getDrivers> {}
 class RequestRideMutation extends Mutation<requestRide, requestRideVariables> {}
+class GetNearbyRides extends Query<getRides> {}
+class AcceptRide extends Mutation<acceptRide, acceptRideVariables> {}
 
 class HomeContainer extends React.Component<IProps, IState> {
   public mapRef: any;
@@ -50,6 +61,7 @@ class HomeContainer extends React.Component<IProps, IState> {
   public drivers: google.maps.Marker[];
 
   public state = {
+    isDriving: false,
     isMenuOpen: false,
     lat: 0,
     lng: 0,
@@ -323,6 +335,20 @@ class HomeContainer extends React.Component<IProps, IState> {
     }
   };
 
+  public handleProfileQuery = (data: userProfile) => {
+    const { GetMyProfile } = data;
+    if (GetMyProfile.user) {
+      const {
+        user: { isDriving },
+      } = GetMyProfile;
+      if (isDriving) {
+        this.setState({
+          isDriving,
+        });
+      }
+    }
+  };
+
   render() {
     const {
       isMenuOpen,
@@ -335,21 +361,16 @@ class HomeContainer extends React.Component<IProps, IState> {
       toLat,
       toLng,
       duration,
+      isDriving,
     } = this.state;
 
     return (
-      <ProfileQuery query={USER_PROFILE}>
+      <ProfileQuery query={USER_PROFILE} onCompleted={this.handleProfileQuery}>
         {({ data, loading }) => (
           <NearbyQueries
             query={GET_NEARBY_DRIVERS}
-            pollInterval={1000}
-            skip={
-              (data &&
-                data.GetMyProfile &&
-                data.GetMyProfile.user &&
-                data.GetMyProfile.user.isDriving) ||
-              false
-            }
+            skip={isDriving}
+            pollInterval={5000}
             onCompleted={this.handleNearbyDrivers}
           >
             {() => (
@@ -369,18 +390,28 @@ class HomeContainer extends React.Component<IProps, IState> {
                 }}
               >
                 {(requestRideFn) => (
-                  <HomePresenter
-                    loading={loading}
-                    isMenuOpen={isMenuOpen}
-                    toggleMenu={this.toggleMenu}
-                    mapRef={this.mapRef}
-                    toAddress={toAddress}
-                    onInputChange={this.onInputChange}
-                    price={price}
-                    data={data}
-                    onAddressSubmit={this.onAddressSubmit}
-                    requestRideFn={requestRideFn}
-                  />
+                  <GetNearbyRides query={GET_NEARBY_RIDE} skip={!isDriving}>
+                    {({ data: nearbyRide }) => (
+                      <AcceptRide mutation={ACCEPT_RIDE}>
+                        {(acceptRideFn) => (
+                          <HomePresenter
+                            loading={loading}
+                            isMenuOpen={isMenuOpen}
+                            toggleMenu={this.toggleMenu}
+                            mapRef={this.mapRef}
+                            toAddress={toAddress}
+                            onInputChange={this.onInputChange}
+                            price={price}
+                            data={data}
+                            onAddressSubmit={this.onAddressSubmit}
+                            requestRideFn={requestRideFn}
+                            nearbyRide={nearbyRide}
+                            acceptRideFn={acceptRideFn}
+                          />
+                        )}
+                      </AcceptRide>
+                    )}
+                  </GetNearbyRides>
                 )}
               </RequestRideMutation>
             )}

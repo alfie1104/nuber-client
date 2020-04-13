@@ -5,9 +5,15 @@ import Sidebar from "react-sidebar";
 import Menu from "../../Components/Menu";
 import AddressBar from "src/Components/AddressBar";
 import Button from "src/Components/Button";
-import { userProfile } from "src/types/api";
+import {
+  userProfile,
+  getRides,
+  acceptRideVariables,
+  acceptRide,
+} from "src/types/api";
 import { MutationFn } from "react-apollo";
 import { requestRide, requestRideVariables } from "../../types/api";
+import RidePopUp from "src/Components/RidePopUp";
 
 const Container = styled.div``;
 
@@ -59,6 +65,8 @@ interface IProps {
   price?: string;
   data?: userProfile;
   requestRideFn?: MutationFn<requestRide, requestRideVariables>;
+  nearbyRide?: getRides;
+  acceptRideFn: MutationFn<acceptRide, acceptRideVariables>;
 }
 const HomePresenter: React.FC<IProps> = ({
   isMenuOpen,
@@ -71,6 +79,8 @@ const HomePresenter: React.FC<IProps> = ({
   price,
   data: { GetMyProfile: { user = null } = {} } = {},
   requestRideFn,
+  nearbyRide: { GetNearbyRide: { ride = null } = {} } = {},
+  acceptRideFn,
 }) => (
   <Container>
     <Helmet>
@@ -105,6 +115,17 @@ const HomePresenter: React.FC<IProps> = ({
           onClick={requestRideFn}
           disabled={toAddress === ""}
           value={`Request Ride ($${price})`}
+        />
+      )}
+      {ride && (
+        <RidePopUp
+          pickUpAddress={ride.pickUpAddress}
+          dropOffAddress={ride.dropOffAddress}
+          price={ride.price}
+          distance={ride.distance}
+          passengerName={ride.passenger.fullName!}
+          passengerPhoto={ride.passenger.profilePhoto!}
+          acceptRideFn={acceptRideFn}
         />
       )}
       <Map ref={mapRef} />
