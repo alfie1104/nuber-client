@@ -48,6 +48,7 @@ interface IProps {
   passengerName: string;
   passengerPhoto: string;
   acceptRideFn: any;
+  id: number;
 }
 
 const RidePopUp: React.FC<IProps> = ({
@@ -58,6 +59,7 @@ const RidePopUp: React.FC<IProps> = ({
   passengerName,
   passengerPhoto,
   acceptRideFn,
+  id,
 }) => (
   <Container>
     <Title>Pick Up Address</Title>
@@ -75,7 +77,10 @@ const RidePopUp: React.FC<IProps> = ({
       <Img src={passengerPhoto} />
       <Data>{passengerName}</Data>
     </Passenger>
-    <Button onClick={null} value={"Accept Ride"} />
+    <Button
+      onClick={() => acceptRideFn({ variables: { rideId: id } })}
+      value={"Accept Ride"}
+    />
   </Container>
 );
 

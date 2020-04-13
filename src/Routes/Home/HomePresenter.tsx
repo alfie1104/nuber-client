@@ -119,6 +119,7 @@ const HomePresenter: React.FC<IProps> = ({
       )}
       {ride && (
         <RidePopUp
+          id={ride.id}
           pickUpAddress={ride.pickUpAddress}
           dropOffAddress={ride.dropOffAddress}
           price={ride.price}
