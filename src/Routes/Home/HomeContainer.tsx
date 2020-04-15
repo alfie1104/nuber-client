@@ -329,9 +329,12 @@ class HomeContainer extends React.Component<IProps, IState> {
   };
 
   public handleRideRequest = (data: requestRide) => {
+    const { history } = this.props;
     const { RequestRide } = data;
+
     if (RequestRide.ok) {
       toast.success("Drive requested, finding a driver");
+      history.push(`/ride/${RequestRide.ride!.id}`);
     } else {
       toast.error(RequestRide.error);
     }
@@ -397,7 +400,17 @@ class HomeContainer extends React.Component<IProps, IState> {
                       const rideSubscriptionOptions: SubscribeToMoreOptions = {
                         document: SUBSCRIBE_NEARBY_RIDES,
                         updateQuery: (prev, { subscriptionData }) => {
-                          console.log(subscriptionData);
+                          if (!subscriptionData.data) {
+                            return prev;
+                          }
+                          const newObject = Object.assign({}, prev, {
+                            GetNearbyRide: {
+                              ...prev.GetNearbyRide,
+                              ride:
+                                subscriptionData.data.NearbyRideSubscription,
+                            },
+                          });
+                          return newObject;
                         },
                       };
                       if (isDriving) {
