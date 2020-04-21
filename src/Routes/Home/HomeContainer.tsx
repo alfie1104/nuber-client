@@ -248,6 +248,7 @@ class HomeContainer extends React.Component<IProps, IState> {
     result: google.maps.DirectionsResult,
     status: google.maps.DirectionsStatus
   ) => {
+    console.log(status);
     if (status === google.maps.DirectionsStatus.OK) {
       const { routes } = result;
       const {

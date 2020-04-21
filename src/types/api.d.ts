@@ -407,7 +407,7 @@ export interface updateRide {
 
 export interface updateRideVariables {
   rideId: number;
-  status: StatusOptions;
+  status: string;
 }
 
 /* tslint:disable */
@@ -529,14 +529,6 @@ export interface getPlaces {
 //==============================================================
 // START Enums and Input Objects
 //==============================================================
-
-export enum StatusOptions {
-  ACCEPTED = "ACCEPTED",
-  CANCELED = "CANCELED",
-  FINISHED = "FINISHED",
-  ONROUTE = "ONROUTE",
-  REQUESTING = "REQUESTING",
-}
 
 //==============================================================
 // END Enums and Input Objects

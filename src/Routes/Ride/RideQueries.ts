@@ -55,7 +55,7 @@ export const RIDE_SUBSCRIPTION = gql`
 `;
 
 export const UPDATE_RIDE_STATUS = gql`
-  mutation updateRide($rideId: Int!, $status: StatusOptions!) {
+  mutation updateRide($rideId: Int!, $status: String!) {
     UpdateRideStatus(rideId: $rideId, status: $status) {
       ok
       error

@@ -5,7 +5,6 @@ import {
   userProfile,
   updateRide,
   updateRideVariables,
-  StatusOptions,
 } from "src/types/api";
 import Button from "src/Components/Button";
 import { MutationFn } from "react-apollo";
@@ -98,27 +97,29 @@ const RidePresenter: React.FC<IProps> = ({
                 updateRideFn({
                   variables: {
                     rideId: ride.id,
-                    status: StatusOptions.ONROUTE,
+                    status: "ONROUTE",
                   },
                 })
               }
             />
           )}
-          {ride.driver.id === user.id && ride.status === "ONROUTE" && (
-            <ExtendedButton
-              value={"Finished"}
-              onClick={() =>
-                updateRideFn({
-                  variables: {
-                    rideId: ride.id,
-                    status: StatusOptions.FINISHED,
-                  },
-                })
-              }
-            />
-          )}
+          {ride.driver &&
+            ride.driver.id === user.id &&
+            ride.status === "ONROUTE" && (
+              <ExtendedButton
+                value={"Finished"}
+                onClick={() =>
+                  updateRideFn({
+                    variables: {
+                      rideId: ride.id,
+                      status: "FINISHED",
+                    },
+                  })
+                }
+              />
+            )}
           {ride.driver.id === user.id ||
-            (ride.passenger.id === user.id && ride.status === "ACCEPTED" && (
+            (ride.passenger.id === user.id && ride.status !== "REQUESTING" && (
               <Link to={`/chat/${ride.chatId}`}>
                 <ExtendedButton value={"Chat"} onClick={null} />
               </Link>
