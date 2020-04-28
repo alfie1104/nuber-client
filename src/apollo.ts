@@ -32,7 +32,7 @@ const authMiddleware = new ApolloLink((operation: Operation, forward: any) => {
 });
 
 const httpLink = new HttpLink({
-  uri: "http://localhost:4000/graphql",
+  uri: "https://nuber-server-1.herokuapp.com/graphql",
 });
 
 const wsLink = new WebSocketLink({
@@ -42,7 +42,7 @@ const wsLink = new WebSocketLink({
     },
     reconnect: true,
   },
-  uri: "ws://localhost:4000/subscription",
+  uri: "ws://nuber-server-1.herokuapp.com/subscription",
 });
 
 // apollo가 스스로 subscription인지 아니면 그냥 http요청인지 판단할 수 없기때문에 다음 함수를 통해 알려줌
