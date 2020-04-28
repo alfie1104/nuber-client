@@ -49,7 +49,7 @@
     "precodegen": "apollo client:download-schema --endpoint=http://localhost:4000/graphql",
     "codegen": "apollo client:codegen src/types/api.d.ts --queries=src/**/*.ts --addTypename --localSchemaFile=schema.json --target=typescript --outputFlat",
     "predeploy": "yarn run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": "react-app"
