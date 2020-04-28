@@ -8,6 +8,7 @@ import { WebSocketLink } from "apollo-link-ws";
 import { getMainDefinition } from "apollo-utilities";
 import { toast } from "react-toastify";
 
+const isDev = process.env.NODE_ENV === "development";
 const getToken = () => {
   const token = localStorage.getItem("jwt");
   if (token) {
@@ -32,7 +33,9 @@ const authMiddleware = new ApolloLink((operation: Operation, forward: any) => {
 });
 
 const httpLink = new HttpLink({
-  uri: "https://nuber-server-1.herokuapp.com/graphql",
+  uri: isDev
+    ? "http://localhost:4000/graphql"
+    : "https://nuber-server-1.herokuapp.com/graphql",
 });
 
 const wsLink = new WebSocketLink({
@@ -42,7 +45,9 @@ const wsLink = new WebSocketLink({
     },
     reconnect: true,
   },
-  uri: "ws://nuber-server-1.herokuapp.com/subscription",
+  uri: isDev
+    ? "ws://localhost:4000/subscription"
+    : "ws://nuber-server-1.herokuapp.com/subscription",
 });
 
 // apollo가 스스로 subscription인지 아니면 그냥 http요청인지 판단할 수 없기때문에 다음 함수를 통해 알려줌
